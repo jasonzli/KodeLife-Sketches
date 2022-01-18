@@ -1,0 +1,48 @@
+#version 450
+
+precision highp float;
+precision highp int;
+precision highp image2D;
+
+uniform float time;
+uniform vec2 resolution;
+uniform vec2 mouse;
+uniform vec3 spectrum;
+
+layout(local_size_x = LOCAL_SIZE_X,
+       local_size_y = LOCAL_SIZE_Y,
+       local_size_z = LOCAL_SIZE_Z) in;
+
+layout(binding = 0) uniform writeonly image2D texture1;
+
+void main()
+{
+    //ivec2 uv = ivec2(gl_GlobalInvocationID.xy);
+    
+    vec2 norm_coordinates = 
+        (gl_GlobalInvocationID.xy + vec2(.5)) / vec2 (imageSize(texture1));
+    
+    vec2 c = (norm_coordinates - vec2(.38,.5)) * 3. - vec2(1.,0.);
+    vec2 z = vec2(0.0,0.0);
+    
+    float i;
+    
+    for (i = 0.; i < 1.; i+= 0.0005)
+    {
+        z = vec2
+        (
+            z.x * z.x - z.y * z.y + c.x,
+            z.y * z.x + z.x * z.y + c.y
+        );
+        
+        if (length(z) > 5.0) 
+        {
+            break;
+        }
+    }
+    
+    vec4 to_write = vec4(mix(vec3(i*20.), vec3(0.), i*5.), 1.);
+    
+    imageStore(texture1, ivec2(gl_GlobalInvocationID.xy), to_write);
+
+}
